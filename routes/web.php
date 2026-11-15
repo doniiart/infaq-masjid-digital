@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicPortalController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Halaman Publik (Tanpa Login)
+Route::get('/', [PublicPortalController::class, 'home'])->name('public.home');
+Route::get('/profil', [PublicPortalController::class, 'profile'])->name('public.profile');
+Route::get('/pembangunan', [PublicPortalController::class, 'development'])->name('public.development');
+Route::get('/transparansi', [PublicPortalController::class, 'transparency'])->name('public.transparency');
 
+// Dashboard Takmir (Dilindungi Autentikasi)
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

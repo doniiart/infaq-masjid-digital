@@ -12,7 +12,7 @@
     </style>
 </head>
 <body onload="window.print()">
-    <h2>Daftar Transaksi Infaq Digital — Masjid Al-Ikhlas</h2>
+    <h2>Daftar Transaksi Infaq Digital — Masjid At Taqwa</h2>
     <p>Dicetak pada: {{ now('Asia/Jakarta')->format('d M Y, H:i') }} WIB</p>
     <table>
         <thead>

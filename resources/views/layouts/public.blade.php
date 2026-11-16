@@ -16,7 +16,7 @@
                         M
                     </div>
                     <div>
-                        <span class="font-bold text-slate-900 block leading-tight">Masjid Al-Ikhlas</span>
+                        <span class="font-bold text-slate-900 block leading-tight">Masjid At Taqwa</span>
                         <span class="text-xs text-emerald-700 font-medium">Sistem Infaq Digital</span>
                     </div>
                 </a>
@@ -60,7 +60,7 @@
     <footer id="kontak" class="bg-slate-900 text-slate-300 mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
             <div>
-                <h3 class="text-white font-bold text-base mb-3">Takmir Masjid Al-Ikhlas</h3>
+                <h3 class="text-white font-bold text-base mb-3">Takmir Masjid At Taqwa</h3>
                 <p class="text-slate-400 leading-relaxed">
                     Jl. Raya Wonosari - Klaten, Jawa Tengah. Sistem pencatatan infaq pembangunan terintegrasi QRIS Statis untuk akuntabilitas dan transparansi umat.
                 </p>
@@ -83,7 +83,7 @@
             </div>
         </div>
         <div class="border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-            &copy; {{ date('Y') }} Takmir Masjid Al-Ikhlas. Seluruh transaksi QRIS diverifikasi secara otomatis.
+            &copy; {{ date('Y') }} Takmir Masjid At Taqwa. Seluruh transaksi QRIS diverifikasi secara otomatis.
         </div>
     </footer>
 </body>

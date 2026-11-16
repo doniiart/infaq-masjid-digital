@@ -12,7 +12,7 @@
     </style>
 </head>
 <body onload="window.print()">
-    <h2>Laporan Keuangan Infaq Pembangunan Masjid Al-Ikhlas</h2>
+    <h2>Laporan Keuangan Infaq Pembangunan Masjid At Taqwa</h2>
     <p>Periode: <strong>{{ $startDate->format('d M Y') }} s/d {{ $endDate->format('d M Y') }}</strong></p>
     <p>Total Pemasukan: <strong>Rp {{ number_format($totalIncome, 0, ',', '.') }}</strong> | Total Pengeluaran: <strong>Rp {{ number_format($totalExpense, 0, ',', '.') }}</strong> | Saldo Periode: <strong>Rp {{ number_format($netBalance, 0, ',', '.') }}</strong></p>
     <table>

@@ -10,16 +10,17 @@ use App\Models\InfaqTransaction;
 use App\Services\AuditLogger;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FinancialReportController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $report = $this->compileReport($request);
 
-        return view('admin.reports.index', $report);
+        return Inertia::render('Admin/Reports/Index', $report);
     }
 
     public function exportCsv(Request $request): StreamedResponse

@@ -9,11 +9,12 @@ use App\Models\FundAllocation;
 use App\Models\InfaqCategory;
 use App\Models\InfaqTransaction;
 use Carbon\Carbon;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
         $now = Carbon::now('Asia/Jakarta');
 
@@ -85,7 +86,7 @@ class DashboardController extends Controller
             ->limit(8)
             ->get();
 
-        return view('dashboard', compact(
+        return Inertia::render('Dashboard', compact(
             'totalIncome',
             'settledCount',
             'todayCount',

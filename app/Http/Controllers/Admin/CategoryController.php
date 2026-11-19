@@ -8,18 +8,19 @@ use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CategoryController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
         $categories = InfaqCategory::withCount(['allocations', 'expenses'])
             ->orderByDesc('is_default')
             ->orderBy('id')
             ->get();
 
-        return view('admin.categories.index', compact('categories'));
+        return Inertia::render('Admin/Categories/Index', compact('categories'));
     }
 
     public function store(Request $request): RedirectResponse

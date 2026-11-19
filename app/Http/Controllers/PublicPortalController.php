@@ -2,126 +2,139 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Expense;
 use App\Models\FundAllocation;
 use App\Models\InfaqCategory;
 use App\Models\InfaqTransaction;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PublicPortalController extends Controller
 {
-    public function home(): View
+    public function home(): Response
     {
-        $summary = $this->getFinancialSummary();
-
-        $recentTransactions = InfaqTransaction::query()
-            ->where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT)
-            ->orderByDesc('transaction_time')
-            ->limit(5)
-            ->get();
-
-        $recentExpenses = Expense::query()
-            ->with('category')
-            ->orderByDesc('expense_date')
-            ->limit(4)
-            ->get();
-
-        return view('public.home', compact('summary', 'recentTransactions', 'recentExpenses'));
-    }
-
-    public function profile(): View
-    {
-        return view('public.profile');
-    }
-
-    public function development(): View
-    {
-        $summary = $this->getFinancialSummary();
-
-        $developmentExpenses = Expense::query()
-            ->whereHas('category', fn ($q) => $q->where('slug', 'infaq-pembangunan'))
-            ->orderByDesc('expense_date')
-            ->limit(10)
-            ->get();
-
-        return view('public.development', compact('summary', 'developmentExpenses'));
-    }
-
-    public function transparency(): View
-    {
-        $summary = $this->getFinancialSummary();
-
-        $categories = InfaqCategory::query()
-            ->where('is_active', true)
-            ->get()
-            ->map(function (InfaqCategory $category) {
-                $allocatedIncome = (float) FundAllocation::query()
-                    ->where('infaq_category_id', $category->id)
-                    ->whereHas('transaction', fn ($q) => $q->where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT))
-                    ->sum('allocated_amount');
-
-                $totalExpense = (float) Expense::query()
-                    ->where('infaq_category_id', $category->id)
-                    ->sum('amount');
-
-                return [
-                    'name'          => $category->name,
-                    'slug'          => $category->slug,
-                    'description'   => $category->description,
-                    'target_amount' => $category->target_amount ? (float) $category->target_amount : null,
-                    'income'        => $allocatedIncome,
-                    'expense'       => $totalExpense,
-                    'balance'       => $allocatedIncome - $totalExpense,
-                ];
-            });
-
-        $transactions = InfaqTransaction::query()
-            ->with('allocations.category')
-            ->where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT)
-            ->orderByDesc('transaction_time')
-            ->paginate(15, ['*'], 'trx_page');
-
-        $expenses = Expense::query()
-            ->with('category')
-            ->orderByDesc('expense_date')
-            ->paginate(15, ['*'], 'exp_page');
-
-        return view('public.transparency', compact('summary', 'categories', 'transactions', 'expenses'));
-    }
-
-    private function getFinancialSummary(): array
-    {
-        $totalIncome = (float) InfaqTransaction::query()
-            ->where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT)
+        $totalIncome = (float) InfaqTransaction::where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT)
             ->sum('gross_amount');
 
-        $totalExpense = (float) Expense::query()->sum('amount');
+        $totalExpense = (float) DB::table('expenses')->sum('amount');
 
-        $developmentCategory = InfaqCategory::where('slug', 'infaq-pembangunan')->first();
-        $developmentTarget = $developmentCategory && $developmentCategory->target_amount
-            ? (float) $developmentCategory->target_amount
-            : 500000000.0;
+        $developmentCategory = InfaqCategory::where('slug', 'pembangunan-masjid')
+            ->orWhere('name', 'ilike', '%pembangunan%')
+            ->first();
 
-        $developmentCollected = 0.0;
-        if ($developmentCategory) {
-            $developmentCollected = (float) FundAllocation::query()
-                ->where('infaq_category_id', $developmentCategory->id)
+        $developmentIncome = $developmentCategory
+            ? (float) FundAllocation::where('infaq_category_id', $developmentCategory->id)
+                ->whereHas('transaction', fn ($q) => $q->where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT))
+                ->sum('allocated_amount')
+            : 0.0;
+
+        $recentTransactions = InfaqTransaction::with('allocations.category')
+            ->where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT)
+            ->orderByDesc('transaction_time')
+            ->limit(8)
+            ->get()
+            ->map(fn (InfaqTransaction $tx) => [
+                'id'               => $tx->id,
+                'reference'        => substr($tx->provider_transaction_id, 0, 12) . '...',
+                'gross_amount'     => (float) $tx->gross_amount,
+                'acquirer'         => strtoupper((string) ($tx->acquirer ?: $tx->payment_type)),
+                'transaction_time' => $tx->transaction_time?->timezone('Asia/Jakarta')->format('d M Y, H:i') . ' WIB',
+                'categories'       => $tx->allocations->map(fn ($a) => $a->category?->name)->filter()->values(),
+            ]);
+
+        return Inertia::render('Public/Home', [
+            'stats' => [
+                'total_income'       => $totalIncome,
+                'total_expense'      => $totalExpense,
+                'net_balance'        => $totalIncome - $totalExpense,
+                'development_income' => $developmentIncome,
+            ],
+            'recentTransactions' => $recentTransactions,
+            'hasOfficialQris'    => file_exists(public_path('images/qris-resmi-masjid.png')),
+        ]);
+    }
+
+    public function transparency(Request $request): Response
+    {
+        $categories = InfaqCategory::orderBy('id')->get()->map(function (InfaqCategory $cat) {
+            $income = (float) FundAllocation::where('infaq_category_id', $cat->id)
                 ->whereHas('transaction', fn ($q) => $q->where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT))
                 ->sum('allocated_amount');
-        }
 
-        $progressPercent = $developmentTarget > 0
-            ? min(100, round(($developmentCollected / $developmentTarget) * 100, 1))
-            : 0;
+            $expense = (float) DB::table('expenses')
+                ->where('infaq_category_id', $cat->id)
+                ->sum('amount');
 
-        return [
-            'total_income'          => $totalIncome,
-            'total_expense'         => $totalExpense,
-            'current_balance'       => $totalIncome - $totalExpense,
-            'settled_count'         => InfaqTransaction::where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT)->count(),
-            'development_target'    => $developmentTarget,
-            'development_collected' => $developmentCollected,
-            'progress_percent'      => $progressPercent,
-        ];
+            return [
+                'id'          => $cat->id,
+                'name'        => $cat->name,
+                'description' => $cat->description,
+                'is_default'  => (bool) $cat->is_default,
+                'income'      => $income,
+                'expense'     => $expense,
+                'balance'     => $income - $expense,
+            ];
+        });
+
+        $transactions = InfaqTransaction::with('allocations.category')
+            ->where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT)
+            ->orderByDesc('transaction_time')
+            ->limit(25)
+            ->get()
+            ->map(fn (InfaqTransaction $tx) => [
+                'id'               => $tx->id,
+                'reference'        => substr($tx->provider_transaction_id, 0, 14) . '...',
+                'gross_amount'     => (float) $tx->gross_amount,
+                'acquirer'         => strtoupper((string) ($tx->acquirer ?: $tx->payment_type)),
+                'transaction_time' => $tx->transaction_time?->timezone('Asia/Jakarta')->format('d M Y, H:i') . ' WIB',
+                'categories'       => $tx->allocations->map(fn ($a) => $a->category?->name)->filter()->values(),
+            ]);
+
+        $expenses = DB::table('expenses')
+            ->leftJoin('infaq_categories', 'expenses.infaq_category_id', '=', 'infaq_categories.id')
+            ->select('expenses.*', 'infaq_categories.name as category_name')
+            ->orderByDesc('expenses.expense_date')
+            ->limit(25)
+            ->get();
+
+        return Inertia::render('Public/Transparency', [
+            'categories'   => $categories,
+            'transactions' => $transactions,
+            'expenses'     => $expenses,
+        ]);
+    }
+
+    public function development(): Response
+    {
+        $devCategories = InfaqCategory::where('slug', 'like', '%pembangunan%')
+            ->orWhere('name', 'ilike', '%pembangunan%')
+            ->get();
+
+        $catIds = $devCategories->pluck('id');
+
+        $collected = $catIds->isNotEmpty()
+            ? (float) FundAllocation::whereIn('infaq_category_id', $catIds)
+                ->whereHas('transaction', fn ($q) => $q->where('transaction_status', InfaqTransaction::STATUS_SETTLEMENT))
+                ->sum('allocated_amount')
+            : 0.0;
+
+        $spent = $catIds->isNotEmpty()
+            ? (float) DB::table('expenses')->whereIn('infaq_category_id', $catIds)->sum('amount')
+            : 0.0;
+
+        return Inertia::render('Public/Development', [
+            'developmentStats' => [
+                'collected' => $collected,
+                'spent'     => $spent,
+                'remaining' => $collected - $spent,
+            ],
+            'hasOfficialQris' => file_exists(public_path('images/qris-resmi-masjid.png')),
+        ]);
+    }
+
+    public function profile(): Response
+    {
+        return Inertia::render('Public/Profile');
     }
 }

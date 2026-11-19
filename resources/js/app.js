@@ -1,7 +1,22 @@
+import '../css/app.css';
 
+import { createApp, h } from 'vue';
+import { createInertiaApp } from '@inertiajs/vue3';
 
-import Alpine from 'alpinejs';
+const appName = import.meta.env.VITE_APP_NAME || 'Masjid At Taqwa';
 
-window.Alpine = Alpine;
-
-Alpine.start();
+createInertiaApp({
+    title: (title) => (title ? `${title} — ${appName}` : appName),
+    resolve: (name) => {
+        const pages = import.meta.glob('./Pages/**/*.vue', { eager: true });
+        return pages[`./Pages/${name}.vue`];
+    },
+    setup({ el, App, props, plugin }) {
+        return createApp({ render: () => h(App, props) })
+            .use(plugin)
+            .mount(el);
+    },
+    progress: {
+        color: '#059669',
+    },
+});

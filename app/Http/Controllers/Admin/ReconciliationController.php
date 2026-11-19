@@ -12,11 +12,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ReconciliationController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
         $runs = ReconciliationRun::with('triggeredByUser')
             ->orderByDesc('created_at')
@@ -34,14 +35,14 @@ class ReconciliationController extends Controller
             'last_sync'      => ReconciliationRun::where('status', 'COMPLETED')->latest()->first()?->created_at,
         ];
 
-        return view('admin.reconciliations.index', compact('runs', 'stats'));
+        return Inertia::render('Admin/Reconciliations/Index', compact('runs', 'stats'));
     }
 
     public function show(ReconciliationRun $reconciliation): View
     {
         $reconciliation->load(['items.transaction', 'items.resolver', 'triggeredByUser']);
 
-        return view('admin.reconciliations.show', compact('reconciliation'));
+        return Inertia::render('admin.reconciliations.show', compact('reconciliation'));
     }
 
     public function importManual(Request $request): RedirectResponse

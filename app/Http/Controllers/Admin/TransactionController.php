@@ -11,12 +11,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransactionController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $query = $this->buildFilteredQuery($request);
 
@@ -28,7 +29,7 @@ class TransactionController extends Controller
             ->distinct()
             ->pluck('acquirer');
 
-        return view('admin.transactions.index', compact('transactions', 'acquirers'));
+        return Inertia::render('Admin/Transactions/Index', compact('transactions', 'acquirers'));
     }
 
     public function show(InfaqTransaction $transaction): View
@@ -36,7 +37,7 @@ class TransactionController extends Controller
         $transaction->load(['allocations.category', 'allocations.allocator', 'reconciliationItems.run']);
         $categories = InfaqCategory::where('is_active', true)->orderBy('id')->get();
 
-        return view('admin.transactions.show', compact('transaction', 'categories'));
+        return Inertia::render('Admin/Transactions/Show', compact('transaction', 'categories'));
     }
 
     public function updateReview(Request $request, InfaqTransaction $transaction): RedirectResponse

@@ -10,11 +10,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ExpenseController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $expenses = Expense::with(['category', 'creator'])
             ->when($request->filled('category_id'), fn ($q) => $q->where('infaq_category_id', $request->input('category_id')))
@@ -28,7 +29,7 @@ class ExpenseController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.expenses.index', compact('expenses', 'categories'));
+        return Inertia::render('Admin/Expenses/Index', compact('expenses', 'categories'));
     }
 
     public function store(Request $request): RedirectResponse

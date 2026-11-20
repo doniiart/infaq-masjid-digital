@@ -156,7 +156,7 @@ class TransactionController extends Controller
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
-    public function exportPrint(Request $request): View
+    public function exportPrint(Request $request): Response
     {
         $transactions = $this->buildFilteredQuery($request)
             ->orderByDesc('transaction_time')
@@ -164,7 +164,7 @@ class TransactionController extends Controller
 
         AuditLogger::log('TRANSACTION_EXPORTED_PRINT', null, null, ['count' => $transactions->count()]);
 
-        return view('admin.transactions.print', compact('transactions'));
+        return Inertia::render('Admin/Transactions/Print', compact('transactions'));
     }
 
     private function buildFilteredQuery(Request $request)

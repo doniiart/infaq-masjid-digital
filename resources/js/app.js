@@ -17,6 +17,8 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
+        delay: 500, // muncul hanya jika loading > 0.5 detik
         color: '#059669',
+        showSpinner: false,
     },
 });

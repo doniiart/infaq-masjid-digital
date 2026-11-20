@@ -32,7 +32,7 @@ class TransactionController extends Controller
         return Inertia::render('Admin/Transactions/Index', compact('transactions', 'acquirers'));
     }
 
-    public function show(InfaqTransaction $transaction): View
+    public function show(InfaqTransaction $transaction): Response
     {
         $transaction->load(['allocations.category', 'allocations.allocator', 'reconciliationItems.run']);
         $categories = InfaqCategory::where('is_active', true)->orderBy('id')->get();

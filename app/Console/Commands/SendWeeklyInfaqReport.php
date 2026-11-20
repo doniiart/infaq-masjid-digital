@@ -67,7 +67,7 @@ class SendWeeklyInfaqReport extends Command
 
         Storage::disk('public')->put($relativePath, $pdf->output());
 
-        $pdfUrl = rtrim(config('app.url'), '/') . '/storage/' . $relativePath;
+        $pdfUrl = rtrim(config('app.url'), '/') . '/laporan-infaq/unduh/' . $filename;
 
         $response = Http::timeout(20)
             ->acceptJson()

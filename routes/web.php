@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicPortalController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 // Halaman Publik (Tanpa Login)
 Route::get('/', [PublicPortalController::class, 'home'])->name('public.home');
@@ -69,5 +70,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/laporan-infaq/unduh/{filename}', function (string $filename) {
+    abort_unless(preg_match('/^laporan-infaq-\d{8}-\d{8}\.pdf$/', $filename), 404);
+
+    $path = 'reports/' . $filename;
+    abort_unless(Storage::disk('public')->exists($path), 404);
+
+    return Storage::disk('public')->download($path, $filename, [
+        'Content-Type' => 'application/pdf',
+    ]);
+})->name('reports.weekly.download');
 
 require __DIR__.'/auth.php';

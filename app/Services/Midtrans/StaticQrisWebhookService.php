@@ -234,27 +234,6 @@ class StaticQrisWebhookService
                             'notes'                => 'Alokasi otomatis sistem dari webhook QRIS Statis.',
                         ]);
                     }
-
-                    AutomationOutbox::create([
-                        'event_id'       => (string) Str::uuid(),
-                        'event_type'     => 'payment.settled',
-                        'aggregate_type' => 'InfaqTransaction',
-                        'aggregate_id'   => (string) $trx->id,
-                        'status'         => AutomationOutbox::STATUS_PENDING,
-                        'payload'        => [
-                            'transaction_db_id'       => $trx->id,
-                            'provider'                => $trx->provider,
-                            'provider_transaction_id' => $trx->provider_transaction_id,
-                            'provider_order_id'       => $trx->provider_order_id,
-                            'gross_amount'            => (float) $trx->gross_amount,
-                            'currency'                => $trx->currency,
-                            'payment_type'            => $trx->payment_type,
-                            'acquirer'                => $trx->acquirer,
-                            'issuer'                  => $trx->issuer,
-                            'transaction_time'        => $trx->transaction_time->toIso8601String(),
-                            'settlement_time'         => $trx->settlement_time?->toIso8601String(),
-                        ],
-                    ]);
                 }
 
                 $providerEvent->update(['processing_status' => 'PROCESSED']);

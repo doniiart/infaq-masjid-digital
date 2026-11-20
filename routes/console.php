@@ -9,3 +9,8 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('outbox:dispatch')->everyMinute()->withoutOverlapping();
+
+Schedule::command('infaq:send-weekly-report')
+    ->weeklyOn(0, '20:00')
+    ->timezone('Asia/Jakarta')
+    ->withoutOverlapping();

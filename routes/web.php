@@ -23,11 +23,6 @@ Route::get('/transparansi', [PublicPortalController::class, 'transparency'])->na
 Route::middleware(['auth', 'role:super_admin,bendahara,auditor'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/public-content', [PublicContentController::class, 'index'])->name('public-content.index');
-    Route::put('/public-content/profile', [PublicContentController::class, 'updateProfile'])->name('public-content.profile.update');
-    Route::post('/public-content/media', [PublicContentController::class, 'storeMedia'])->name('public-content.media.store');
-    Route::delete('/public-content/media/{media}', [PublicContentController::class, 'destroyMedia'])->name('public-content.media.destroy');
-
     // Manajemen Transaksi
     Route::get('/admin/transactions', [TransactionController::class, 'index'])->name('admin.transactions.index');
     Route::get('/admin/transactions/export/csv', [TransactionController::class, 'exportCsv'])->name('admin.transactions.export.csv');
@@ -50,6 +45,9 @@ Route::middleware(['auth', 'role:super_admin,bendahara,auditor'])->group(functio
     // Audit Log
     Route::get('/admin/audit-logs', [AuditLogController::class, 'index'])->name('admin.audit-logs.index');
 
+    // konten publik read
+    Route::get('/admin/public-content', [PublicContentController::class, 'index'])->name('admin.public-content.index');
+
     // Aksi Mutasi (Khusus Super Admin & Bendahara; Auditor hanya Read-Only)
     Route::middleware('role:super_admin,bendahara')->group(function () {
         Route::patch('/admin/transactions/{transaction}/review', [TransactionController::class, 'updateReview'])->name('admin.transactions.review');
@@ -63,6 +61,11 @@ Route::middleware(['auth', 'role:super_admin,bendahara,auditor'])->group(functio
 
         Route::post('/admin/reconciliations/import', [ReconciliationController::class, 'importManual'])->name('admin.reconciliations.import');
         Route::patch('/admin/reconciliations/items/{item}/resolve', [ReconciliationController::class, 'resolveItem'])->name('admin.reconciliations.items.resolve');
+
+        // Konten Publik (Mutasi)
+        Route::put('/admin/public-content/profile', [PublicContentController::class, 'updateProfile'])->name('admin.public-content.profile.update');
+        Route::post('/admin/public-content/media', [PublicContentController::class, 'storeMedia'])->name('admin.public-content.media.store');
+        Route::delete('/admin/public-content/media/{media}', [PublicContentController::class, 'destroyMedia'])->name('admin.public-content.media.destroy');
     });
 
     // Hapus Pengeluaran (Dibatasi Khusus Super Admin)

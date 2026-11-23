@@ -11,6 +11,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicPortalController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\Admin\PublicContentController;
 
 // Halaman Publik (Tanpa Login)
 Route::get('/', [PublicPortalController::class, 'home'])->name('public.home');
@@ -21,6 +22,11 @@ Route::get('/transparansi', [PublicPortalController::class, 'transparency'])->na
 // Panel Administrasi Takmir (Terproteksi Auth + RBAC)
 Route::middleware(['auth', 'role:super_admin,bendahara,auditor'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/public-content', [PublicContentController::class, 'index'])->name('public-content.index');
+    Route::put('/public-content/profile', [PublicContentController::class, 'updateProfile'])->name('public-content.profile.update');
+    Route::post('/public-content/media', [PublicContentController::class, 'storeMedia'])->name('public-content.media.store');
+    Route::delete('/public-content/media/{media}', [PublicContentController::class, 'destroyMedia'])->name('public-content.media.destroy');
 
     // Manajemen Transaksi
     Route::get('/admin/transactions', [TransactionController::class, 'index'])->name('admin.transactions.index');

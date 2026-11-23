@@ -17,6 +17,7 @@ const navItems = [
     { label: 'Laporan', href: '/admin/reports' },
     { label: 'Rekonsiliasi', href: '/admin/reconciliations' },
     { label: 'Audit Log', href: '/admin/audit-logs' },
+    { label: 'Konten Publik', href: '/admin/public-content' },
 ];
 
 const isActive = (item) => {

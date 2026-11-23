@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\DevelopmentMedia;
+use App\Models\SiteSetting;
 
 class PublicPortalController extends Controller
 {
@@ -124,17 +126,26 @@ class PublicPortalController extends Controller
             : 0.0;
 
         return Inertia::render('Public/Development', [
-            'developmentStats' => [
-                'collected' => $collected,
-                'spent'     => $spent,
-                'remaining' => $collected - $spent,
-            ],
-            'hasOfficialQris' => file_exists(public_path('images/qris-resmi-masjid.png')),
+            'mediaList' => DevelopmentMedia::query()
+                ->where('is_published', true)
+                ->orderBy('sort_order')
+                ->orderByDesc('created_at')
+                ->get(),
         ]);
     }
 
     public function profile(): Response
     {
-        return Inertia::render('Public/Profile');
+        return Inertia::render('Public/Profile', [
+            'tagline' => SiteSetting::getValue(
+                'profile_tagline',
+                "Pusat ibadah, pendidikan Al-Qur'an, dan pemberdayaan ekonomi umat."
+            ),
+            'history' => SiteSetting::getValue(
+                'profile_history',
+                'Masjid At Taqwa didirikan atas swadaya masyarakat dan wakaf tanah warga setempat sebagai sarana ibadah berjamaah serta pusat pembinaan keislaman umat. Seiring bertambahnya jumlah jamaah, takmir bersama panitia pembangunan menginisiasi perluasan ruang ibadah dan menerapkan pencatatan infaq berbasis QRIS digital agar pengelolaan dana umat dapat diaudit secara terbuka.'
+            ),
+            'committeeMembers' => SiteSetting::getCommitteeMembers(),
+        ]);
     }
 }

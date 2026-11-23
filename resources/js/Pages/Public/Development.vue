@@ -7,6 +7,7 @@ const props = defineProps({
     summary: { type: Object, default: () => ({}) },
     developmentStats: { type: Object, default: () => ({}) },
     developmentExpenses: { type: Array, default: () => [] },
+    mediaList: {type: Array,default: () => [] },
 });
 
 const dataSummary = computed(() => {
@@ -85,6 +86,54 @@ const formatDate = (val) => {
                         :style="{ width: `${Math.min(100, Math.max(6, dataSummary.progress_percent))}%` }"
                     >
                         {{ dataSummary.progress_percent }}%
+                    </div>
+                </div>
+            </div>
+
+    <!-- Dokumentasi Foto & Video Progress Pembangunan -->
+            <div v-if="mediaList.length > 0" class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+                <div class="mb-5">
+                    <h2 class="text-lg font-bold text-slate-900">Dokumentasi Progress Pembangunan</h2>
+                    <p class="mt-1 text-xs text-slate-500">
+                        Foto dan video perkembangan fisik pembangunan Masjid At Taqwa.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div
+                        v-for="item in mediaList"
+                        :key="item.id"
+                        class="overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+                    >
+                        <div class="aspect-video w-full bg-slate-900">
+                            <img
+                                v-if="item.media_type === 'image'"
+                                :src="item.media_url"
+                                :alt="item.title"
+                                class="h-full w-full object-cover"
+                            />
+                            <video
+                                v-else-if="item.media_type === 'video'"
+                                :src="item.media_url"
+                                controls
+                                preload="metadata"
+                                class="h-full w-full object-contain"
+                            ></video>
+                            <iframe
+                                v-else-if="item.media_type === 'youtube' && item.youtube_embed_url"
+                                :src="item.youtube_embed_url"
+                                class="h-full w-full"
+                                frameborder="0"
+                                allowfullscreen
+                            ></iframe>
+                        </div>
+
+                        <div class="p-4">
+                            <h3 class="text-sm font-bold text-slate-900">{{ item.title }}</h3>
+                            <p v-if="item.description" class="mt-1 text-xs leading-relaxed text-slate-600">
+                                {{ item.description }}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

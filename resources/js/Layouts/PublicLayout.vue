@@ -114,9 +114,9 @@ const isActive = (href) => {
                 <div>
                     <h3 class="text-white font-bold text-base mb-3">Kontak Pengurus &amp; Bendahara</h3>
                     <ul class="space-y-2 text-slate-400">
-                        <li>Ketua Takmir: H. Ahmad Fauzi (0812-0000-1111)</li>
-                        <li>Bendahara Pembangunan: Ust. Budi Santoso (0812-0000-2222)</li>
-                        <li>Email: takmir@masjidalikhlas.or.id</li>
+                        <li>Ketua Takmir: Bp. David Suyadi (+62 813-6814-7802)</li>
+                        <li>Bendahara Pembangunan: Bp. Eko Prasetyo (+62 889-8608-2926)</li>
+                        <li>Email: masjid@at-taqwa.id</li>
                     </ul>
                 </div>
             </div>
